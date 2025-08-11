@@ -21,7 +21,7 @@ const fmtPLN = (v: number) =>
 export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
   const { data = [], isLoading, error } = useMetrics(days)
   const [selected, setSelected] = React.useState<Record<MetricKey, boolean>>({
-    purchases: true, total_users: false, add_to_cart: false, purchase_revenue: false, meta_spend: false,
+    purchases: false, total_users: true, add_to_cart: true, purchase_revenue: false, meta_spend: true,
   })
 
   if (error) return <div style={{ color: 'crimson' }}>Błąd: {(error as any).message}</div>
