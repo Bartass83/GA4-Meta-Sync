@@ -1,0 +1,30 @@
+{
+  "name": "ga4-meta-sync",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "type": "module",
+  "dependencies": {
+    "@google-analytics/data": "^5.2.0",
+    "@google-cloud/local-auth": "^3.0.1",
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "facebook-nodejs-business-sdk": "^23.0.1",
+    "google-spreadsheet": "^5.0.1",
+    "json2csv": "^6.0.0-alpha.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}

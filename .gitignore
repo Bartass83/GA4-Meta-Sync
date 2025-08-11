@@ -1,0 +1,20 @@
+# node / build
+node_modules/
+frontend/node_modules/
+dist/
+build/
+frontend/dist/
+*.log
+
+# env & klucze (NIE WPYCHAĆ!)
+.env
+.env.*
+credentials_ga4.json
+credentials_sheets.json
+ga4_meta.csv
+
+# edytory / system
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
