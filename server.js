@@ -10,20 +10,26 @@ import { getMetaChanges, getMetaSpend } from './meta.js';
 const app = express();
 app.use(cors());
 
-// API endpoint do pobierania metryk
+// Endpoint API
 app.get('/api/metrics', async (req, res) => {
   try {
     const days = parseInt(req.query.days) || 30;
     const startDate = dayjs().subtract(days, 'day').format('YYYY-MM-DD');
     const endDate = dayjs().format('YYYY-MM-DD');
 
-    const ga4Data = await getGA4Data(process.env.GA4_PROPERTY_ID, startDate, endDate);
+    const ga4Data = await getGA4Data(
+      process.env.GA4_PROPERTY_ID,
+      startDate,
+      endDate
+    );
+
     const metaData = await getMetaChanges(
       process.env.META_AD_ACCOUNT_ID,
       process.env.META_ACCESS_TOKEN,
       startDate,
       endDate
     );
+
     const spendData = await getMetaSpend(
       process.env.META_AD_ACCOUNT_ID,
       process.env.META_ACCESS_TOKEN,
@@ -31,23 +37,21 @@ app.get('/api/metrics', async (req, res) => {
       endDate
     );
 
-    // Grupowanie meta actions po dacie
     const metaByDate = metaData.reduce((acc, m) => {
       if (!acc[m.date]) acc[m.date] = [];
       acc[m.date].push(m.description);
       return acc;
     }, {});
+
     Object.keys(metaByDate).forEach(date => {
       metaByDate[date] = [...new Set(metaByDate[date])].join(' | ');
     });
 
-    // Grupowanie meta spend po dacie
     const spendByDate = spendData.reduce((acc, s) => {
       acc[s.date] = s.spend;
       return acc;
     }, {});
 
-    // Scalanie wszystkiego w jedną tablicę
     const merged = ga4Data.map(row => ({
       ...row,
       meta_actions: metaByDate[row.date] || '',
@@ -61,19 +65,19 @@ app.get('/api/metrics', async (req, res) => {
   }
 });
 
-// Ustalanie ścieżki głównej projektu
+// === Serwowanie frontu ===
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serwowanie frontendu po buildzie
-app.use(express.static(path.join(__dirname, 'frontend', 'dist')));
+const distPath = path.join(__dirname, 'frontend', 'dist');
+app.use(express.static(distPath));
 
-// Wszystkie inne trasy przekierowują do index.html (SPA)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+// Fallback SPA — dla wszystkiego poza /api serwujemy index.html
+app.get(/^(?!\/api).*/, (req, res) => {
+  res.sendFile(path.join(distPath, 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`✅ Server API działa na porcie ${PORT}`);
+  console.log(`✅ Server API + Front działa na porcie ${PORT}`);
 });
