@@ -27,7 +27,6 @@ export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
   if (error) return <div style={{ color: 'crimson' }}>Błąd: {(error as any).message}</div>
   if (isLoading) return <div>Ładowanie…</div>
 
-  // dataset TYLKO prymitywy (wymóg X-Charts)
   const dataset = data.map(d => ({
     x: new Date(d.date),
     purchases: Number(d.purchases ?? 0),
@@ -37,11 +36,9 @@ export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
     meta_spend: Number(d.meta_spend ?? 0),
   }))
 
-  // pierwsza zaznaczona metryka -> do niej „przyklejamy” kropki
   const firstSelected: MetricKey =
     (Object.keys(selected).find(k => (selected as any)[k]) as MetricKey) || 'purchases'
 
-  // kropki (trzymamy actions/spend w data scattera)
   const dots = data
     .map(d => ({
       x: new Date(d.date),
@@ -51,14 +48,24 @@ export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
     }))
     .filter(p => p.actions.length > 0)
 
-  const leftLines  = METRICS
-    .filter(m => m.axis === 'left'  && selected[m.key])
-    .map(m => ({ id: `line-${m.key}`, type: 'line', label: m.label, dataKey: m.key, yAxisKey: 'left' }) as any)
+  const leftLines = METRICS
+    .filter(m => m.axis === 'left' && selected[m.key])
+    .map(m => ({
+      id: `line-${m.key}`,
+      type: 'line',
+      label: m.label,
+      dataKey: m.key,
+      yAxisKey: 'left'
+    }) as any)
 
   const rightLines = METRICS
     .filter(m => m.axis === 'right' && selected[m.key])
     .map(m => ({
-      id: `line-${m.key}`, type: 'line', label: m.label, dataKey: m.key, yAxisKey: 'right',
+      id: `line-${m.key}`,
+      type: 'line',
+      label: m.label,
+      dataKey: m.key,
+      yAxisKey: 'right',
       valueFormatter: (v: number) => fmtPLN(Number(v || 0)),
     }) as any)
 
@@ -85,8 +92,16 @@ export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
         dataset={dataset}
         xAxis={[{ scaleType: 'time', dataKey: 'x' }]}
         yAxis={[
-          { id: 'left' },
-          { id: 'right', position: 'right' },
+          {
+            id: 'left',
+            label: 'Ilość zdarzeń',
+          },
+          {
+            id: 'right',
+            position: 'right',
+            label: 'Kwota (PLN)',
+            valueFormatter: (v: number) => fmtPLN(v ?? 0),
+          },
         ]}
         series={[
           ...leftLines,
@@ -98,8 +113,8 @@ export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
             xKey: 'x',
             yKey: 'y',
             data: dots,
+            yAxisKey: 'left',
             markerSize: 8,
-            // Tooltip dla kropek (działa w v8.9.2)
             valueFormatter: (_v: number, ctx: { dataIndex: number }) => {
               const d = dots[ctx.dataIndex]
               const acts = d?.actions?.length ? `• ${d.actions.join('\n• ')}` : '(brak)'
@@ -112,7 +127,8 @@ export default function Ga4MetaChart({ days = 30 }: { days?: number }) {
         <LinePlot />
         <ScatterPlot />
         <ChartsXAxis />
-        <ChartsYAxis />
+        <ChartsYAxis axisId="left" />
+        <ChartsYAxis axisId="right" />
         <ChartsLegend />
         <ChartsTooltip
           trigger="item"
